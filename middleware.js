@@ -1,31 +1,17 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { auth, clerkMiddleware, createRouteMatcher, } from "@clerk/nextjs/server";
 
-// Helper function to create route matcher
-const createRouteMatcher = (patterns) => {
-  return (request) => {
-    const url = new URL(request.url);
-    return patterns.some(pattern => {
-      if (pattern instanceof RegExp) {
-        return pattern.test(url.pathname);
-      }
-      return url.pathname.startsWith(pattern);
-    });
-  };
-};
 
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)']);
 
-export const onRequest = clerkMiddleware((auth, context) => {
-  const { redirectToSignIn, userId } = auth();
-
-  if (!userId && isProtectedRoute(context.request)) {
-    return redirectToSignIn();
-  }
-});
+export default clerkMiddleware(async (auth, req) => {
+  if (isProtectedRoute(req)) await auth.protect()
+})
 
 export const config = {
   matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
     '/(api|trpc)(.*)',
   ],
-};
+}
