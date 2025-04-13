@@ -32,7 +32,7 @@ function Header() {
           InterviewGenie
         </h2>
       </div>
-      <div className="p-[2px] bg-gradient-to-r from-[#5417d7] via-[#8b5cf6] to-[#5417d7] rounded-full animate-gradient bg-[length:200%_200%]">
+      <div className=" p-[2px] bg-gradient-to-r from-[#5417d7] via-[#8b5cf6] to-[#5417d7] rounded-full animate-gradient bg-[length:200%_200%]">
         <ul className=" hidden md:flex gap-8 bg-white dark:bg-[#1e1e1e] backdrop-blur-sm p-2 px-2 pr-4 rounded-full text-[#444444] dark:text-[#e2e2e2] font-semibold items-center">
           <li
             className={`hover:text-[#8b5cf6] transition-colors cursor-pointer
@@ -42,17 +42,23 @@ function Header() {
             Dashboard
           </li>
           <li
-            className={`hover:text-[#8b5cf6] transition-colors cursor-pointer`}
+            className={`hover:text-[#8b5cf6] transition-colors cursor-pointer
+                ${path == "/dashboard/questions" && " bg-[#d8cdff] dark:bg-[#2a2149] px-[18px] py-2 text-[#5100ff] dark:text-[#7433ff] rounded-full"}
+            `}
           >
             Questions
           </li>
           <li
-            className={`hover:text-[#8b5cf6] transition-colors cursor-pointer`}
+            className={`hover:text-[#8b5cf6] transition-colors cursor-pointer
+                ${path == "/dashboard/upgrade" && " bg-[#d8cdff] dark:bg-[#2a2149] px-[18px] py-2 text-[#5100ff] dark:text-[#7433ff] rounded-full"}
+            `}
           >
             Upgrade
           </li>
           <li
-            className={`hover:text-[#8b5cf6] transition-colors cursor-pointer`}
+            className={`hover:text-[#8b5cf6] transition-colors cursor-pointer
+                ${path == "/dashboard/how" && " bg-[#d8cdff] dark:bg-[#2a2149] px-[18px] py-2 text-[#5100ff] dark:text-[#7433ff] rounded-full"}
+            `}
           >
             How it Works?
           </li>
