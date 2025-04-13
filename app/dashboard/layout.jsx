@@ -1,13 +1,11 @@
 import React from "react";
 import Header from "./_components/Header";
 
-function DashboardLayout({ children }) {
+export default function DashboardLayout({ children }) {
   return (
-    <div>
+    <div className="min-h-screen bg-white dark:bg-[#121212] transition-colors duration-300">
       <Header />
       {children}
     </div>
   );
 }
-
-export default DashboardLayout;
