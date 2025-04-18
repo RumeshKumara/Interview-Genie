@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/d";
+} from "../../../components/ui/dialog";
 
 function AddNewInterview() {
   const [openDialog, setOpenDialog] = useState(false);
@@ -22,7 +22,7 @@ function AddNewInterview() {
           + Add New Interview
         </h2>
       </div>
-      <Dialog open={openDialog}>
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Are you absolutely sure?</DialogTitle>
