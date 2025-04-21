@@ -4,11 +4,11 @@ import AddNewInterview from "./_components/AddNewInterview";
 
 function Dashboard() {
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-[#2b2b2b] dark:text-white ">
+    <div className="">
+      <h2 className="text-3xl font-bold text-[#5100ff] dark:text-[#6f2dff] ">
         Dashboard
       </h2>
-      <h2 className="text-gray-500 dark:text-white/70 ">
+      <h2 className="text-gray-500 dark:text-white/70">
         Create and Start your AI Mockup Interview
       </h2>
 

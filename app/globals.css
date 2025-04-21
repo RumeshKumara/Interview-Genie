@@ -124,6 +124,20 @@
   }
 }
 
+.gradient-text {
+  background: linear-gradient(
+    to right,
+    #5100ff,
+    #f0e9ff,
+    #5100ff
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient 10s linear infinite;
+}
+
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient 3s ease infinite;
