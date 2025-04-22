@@ -19,9 +19,24 @@ function AddNewInterview() {
   const [jobDesc, setJobDesc] = useState();
   const [jobExperience, setJobExperience] = useState();
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     console.log(jobPosition, jobDesc, jobExperience);
+
+    const InputPrompt =
+      "Job Position: " +
+      jobPosition +
+      ", Job Description: " +
+      jobDesc +
+      ", Years of Experience: " +
+      jobExperience +
+      ", Depends on this information please give me " +
+      process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT +
+      " Interview question with answers in JSON Format, Give Question and Answers as field in JSON";
+
+    const result = await chatSection.sendMessage(InputPrompt);
+
+    console.log(result.response.text());
   };
   return (
     <div>
