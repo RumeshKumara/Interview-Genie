@@ -1,6 +1,13 @@
 "use client";
 import React, { useState } from "react";
-// Update the import path to the correct location
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
+import { LoaderCircle } from "lucide-react";
+import { MockInterview } from "../../../util/schema";
+import { v4 as uuidv4 } from "uuid";
+import { chatSession } from "../../../util/GeminiAIModal";
+import { db } from "../../../util/db";
 import {
   Dialog,
   DialogContent,
@@ -9,17 +16,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../../components/ui/dialog";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { Textarea } from "../../../components/ui/textarea";
+import { useUser } from "@clerk/nextjs";
+import moment from "moment/moment";
 
 function AddNewInterview() {
   const [openDialog, setOpenDialog] = useState(false);
   const [jobPosition, setJobPosition] = useState();
   const [jobDesc, setJobDesc] = useState();
   const [jobExperience, setJobExperience] = useState();
+  const [loading, setLoading] = useState(false);
+  const [jsonResponse, setJsonResponse] = useState([]);
+  const { user } = useUser();
 
   const onSubmit = async (e) => {
+    setLoading(true);
     e.preventDefault();
     console.log(jobPosition, jobDesc, jobExperience);
 
@@ -34,10 +44,43 @@ function AddNewInterview() {
       process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT +
       " Interview question with answers in JSON Format, Give Question and Answers as field in JSON";
 
-    const result = await chatSection.sendMessage(InputPrompt);
+    try {
+      const result = await chatSession.sendMessage(InputPrompt);
+      const responseText = await result.response.text();
+      const MockJsonResp = responseText
+        .replace("```json", "")
+        .replace("```", "")
+        .trim();
 
-    console.log(result.response.text());
+      const parsedResponse = JSON.parse(MockJsonResp);
+      console.log(parsedResponse);
+      setJsonResponse(parsedResponse);
+
+      if (result) {
+        const resp = await db
+          .insert(MockInterview)
+          .values({
+            mockId: uuidv4(),
+            jsonMockResp: MockJsonResp,
+            jobPosition: jobPosition,
+            jobDesc: jobDesc,
+            jobExperience: jobExperience,
+            createdBy: user?.primaryEmailAddress?.emailAddress,
+            createdAt: moment().format("DD-MM-yyyy"),
+          })
+          .returning({ mockId: MockInterview.mockID });
+
+        console.log("Insert ID:", resp);
+      } else {
+        console.log("ERROR");
+      }
+    } catch (error) {
+      console.error("Error during submission:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <div>
       <div
@@ -106,8 +149,16 @@ function AddNewInterview() {
                   <Button
                     type="submit"
                     className="transition-all duration-300 hover:scale-105"
+                    disabled={loading}
                   >
-                    Start Interview
+                    {loading ? (
+                      <>
+                        <LoaderCircle className=" animate-spin" />
+                        'Generation from AI'
+                      </>
+                    ) : (
+                      "Start Interview"
+                    )}
                   </Button>
                 </div>
               </form>
