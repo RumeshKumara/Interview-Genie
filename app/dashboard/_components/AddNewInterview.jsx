@@ -6,7 +6,7 @@ import { Textarea } from "../../../components/ui/textarea";
 import { LoaderCircle } from "lucide-react";
 import { MockInterview } from "../../../util/schema";
 import { v4 as uuidv4 } from "uuid";
-// import { chatSession } from "../../../util/GeminiAIModal";
+import { chatSession } from "../../../util/GeminiAIModal";
 import { db } from "../../../util/db";
 import {
   Dialog,
@@ -70,7 +70,7 @@ function AddNewInterview() {
             createdBy: user?.primaryEmailAddress?.emailAddress,
             createdAt: moment().format("DD-MM-yyyy"),
           })
-          .returning({ mockId: MockInterview.mockID });
+          .returning({ mockId: MockInterview.mockId }); // Corrected column name
 
         console.log("Insert ID:", resp);
         if (resp) {
