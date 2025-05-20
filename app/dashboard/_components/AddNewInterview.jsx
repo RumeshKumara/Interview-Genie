@@ -33,7 +33,14 @@ function AddNewInterview() {
   const onSubmit = async (e) => {
     setLoading(true);
     e.preventDefault();
-    console.log(jobPosition, jobDesc, jobExperience);
+    console.log(
+      "Job Position:",
+      jobPosition,
+      "Job Description:",
+      jobDesc,
+      "Years of Experience:",
+      jobExperience
+    );
 
     const InputPrompt =
       "Job Position: " +
@@ -47,15 +54,28 @@ function AddNewInterview() {
       " Interview question with answers in JSON Format, Give Question and Answers as field in JSON";
 
     try {
+      console.log("chatSession object:", chatSession); // Debugging log
+      if (!chatSession || typeof chatSession.sendMessage !== "function") {
+        throw new Error(
+          "chatSession.sendMessage is not a function or is undefined"
+        );
+      }
+
       const result = await chatSession.sendMessage(InputPrompt);
+      console.log("Raw AI Response:", result); // Log raw response for debugging
+
       const responseText = await result.response.text();
+      console.log("Response Text:", responseText); // Log response text
+
       const MockJsonResp = responseText
         .replace("```json", "")
         .replace("```", "")
         .trim();
 
+      console.log("Formatted JSON Response:", MockJsonResp); // Log formatted response
+
       const parsedResponse = JSON.parse(MockJsonResp);
-      console.log(parsedResponse);
+      console.log("Parsed AI Questions and Answers:", parsedResponse); // Display parsed AI response
       setJsonResponse(parsedResponse);
 
       if (result) {
@@ -70,7 +90,7 @@ function AddNewInterview() {
             createdBy: user?.primaryEmailAddress?.emailAddress,
             createdAt: moment().format("DD-MM-yyyy"),
           })
-          .returning({ mockId: MockInterview.mockId }); // Corrected column name
+          .returning({ mockId: MockInterview.mockId });
 
         console.log("Insert ID:", resp);
         if (resp) {
@@ -78,7 +98,7 @@ function AddNewInterview() {
           router.push("/dashboard/interview/" + resp[0]?.mockId);
         }
       } else {
-        console.log("ERROR");
+        console.error("No result returned from chatSession.sendMessage");
       }
     } catch (error) {
       console.error("Error during submission:", error);
