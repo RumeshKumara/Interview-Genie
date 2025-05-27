@@ -143,6 +143,55 @@
   animation: gradient 3s ease infinite;
 }
 
+@keyframes bgColorAnim {
+  0%   { background-color: #f8fafc; }
+  20%  { background-color: #e0e7ff; }
+  40%  { background-color: #ffe4e6; }
+  60%  { background-color: #f0fdf4; }
+  80%  { background-color: #fef9c3; }
+  100% { background-color: #f8fafc; }
+}
+.animate-bgColor {
+  animation: bgColorAnim 8s ease-in-out infinite;
+}
+
+@keyframes getStartBgAnim {
+  0% {
+    background-position: 0% 50%;
+    background-color: #5100ff;
+  }
+  25% {
+    background-position: 50% 50%;
+    background-color: #f0e9ff;
+  }
+  50% {
+    background-position: 100% 50%;
+    background-color: #00bcd4;
+  }
+  75% {
+    background-position: 50% 50%;
+    background-color: #4caf50;
+  }
+  100% {
+    background-position: 0% 50%;
+    background-color: #5100ff;
+  }
+}
+
+.get-start-animate-bg {
+  background: linear-gradient(
+    90deg,
+    #5100ff,
+    #f0e9ff,
+    #00bcd4,
+    #4caf50,
+    #5100ff
+  );
+  background-size: 200% 200%;
+  animation: getStartBgAnim 6s ease-in-out infinite;
+  transition: background 0.3s;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -160,3 +209,26 @@ input[type="number"]::-webkit-outer-spin-button {
   color: #5100ff;
 }
 
+/* @keyframes borderColorAnim {
+  0% { border-color: #17d7ad; }
+  20% { border-color: #ff9800; }
+  40% { border-color: #00bcd4; }
+  60% { border-color: #4caf50; }
+  80% { border-color: #e91e63; }
+  100% { border-color: #9a17d7; }
+}
+.animate-borderColor {
+  animation: borderColorAnim 2s linear infinite;
+} */
+@keyframes logoScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-logoScroll {
+  animation: logoScroll 20s linear infinite;
+  min-width: 400%;
+  will-change: transform;
+}
+.paused-logo-scroll {
+  animation-play-state: paused !important;
+}
