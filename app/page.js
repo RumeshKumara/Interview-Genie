@@ -3,17 +3,47 @@
 import { Button } from "../components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
-import { FaArrowRight, FaGithub } from "react-icons/fa";
+import { FaArrowRight, FaGithub, FaSun, FaMoon } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function Home() {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Sync dark mode with document
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
+  // Optional: Persist theme in localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    if (stored === "dark") setDarkMode(true);
+  }, []);
+  useEffect(() => {
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   return (
     <>
-
+      {/* Theme toggle button */}
+      <button
+        className="fixed z-50 p-2 transition-colors bg-white border border-gray-200 rounded-full shadow-md top-4 right-4 dark:bg-gray-800 dark:border-gray-700"
+        onClick={() => setDarkMode((v) => !v)}
+        aria-label="Toggle dark mode"
+      >
+        {darkMode ? (
+          <FaSun className="text-yellow-400" size={22} />
+        ) : (
+          <FaMoon className="text-gray-700" size={22} />
+        )}
+      </button>
       <div className="flex flex-col items-center justify-center min-h-screen p-4 ">
         {/* Add top padding to avoid overlap with navbar */}
         <div className="h-8" /> {/* Reduced from h-16 to h-8 */}
@@ -23,7 +53,7 @@ export default function Home() {
           width={60}
           height={60}
         />
-        <h2 className="text-6xl font-bold text-gray-800 ">InterviewGenie </h2>
+        <h2 className="text-6xl font-bold text-gray-800 dark:text-white ">InterviewGenie </h2>
         <p className="text-lg tracking-wide text-gray-600 ">
           Your AI-Powered Interview Assistant
         </p>
@@ -58,9 +88,9 @@ export default function Home() {
         {/* Infinite horizontal scroll of programming logos */}
         <div className="relative w-full mt-16 overflow-hidden">
           {/* Left blur overlay */}
-          <div className="absolute top-0 left-0 z-10 w-24 h-full pointer-events-none bg-gradient-to-r from-white via-white/10 to-transparent" />
+          <div className="absolute top-0 left-0 z-10 w-24 h-full pointer-events-none bg-gradient-to-r from-white via-white/10 to-transparent dark:bg-gradient-to-r dark:from-gray-900 dark:via-gray-900/10 dark:to-transparent" />
           {/* Right blur overlay */}
-          <div className="absolute top-0 right-0 z-10 w-24 h-full pointer-events-none bg-gradient-to-l from-white via-white/10 to-transparent" />
+          <div className="absolute top-0 right-0 z-10 w-24 h-full pointer-events-none bg-gradient-to-l from-white via-white/10 to-transparent dark:bg-gradient-to-l dark:from-gray-900 dark:via-gray-900/10 dark:to-transparent" />
           <div className="relative w-full h-20">
             <div
               className={`absolute top-0 left-0 flex items-center h-20 animate-logoScroll whitespace-nowrap${isHovered ? " paused-logo-scroll" : ""}`}
