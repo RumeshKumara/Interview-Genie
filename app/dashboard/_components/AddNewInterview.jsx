@@ -22,16 +22,18 @@ import { useRouter } from "next/navigation";
 
 function AddNewInterview() {
   const [openDialog, setOpenDialog] = useState(false);
-  const [jobPosition, setJobPosition] = useState();
-  const [jobDesc, setJobDesc] = useState();
-  const [jobExperience, setJobExperience] = useState();
+  const [jobPosition, setJobPosition] = useState(""); // default to empty string
+  const [jobDesc, setJobDesc] = useState(""); // default to empty string
+  const [jobExperience, setJobExperience] = useState(""); // default to empty string
   const [loading, setLoading] = useState(false);
   const [jsonResponse, setJsonResponse] = useState([]);
+  const [error, setError] = useState(""); // add error state
   const router = useRouter();
   const { user } = useUser();
 
   const onSubmit = async (e) => {
     setLoading(true);
+    setError(""); // clear previous errors
     e.preventDefault();
     console.log(
       "Job Position:",
@@ -49,9 +51,9 @@ function AddNewInterview() {
       jobDesc +
       ", Years of Experience: " +
       jobExperience +
-      ", Depends on this information please give me " +
+      ", Based on this information, please give me " +
       process.env.NEXT_PUBLIC_INTERVIEW_QUESTION_COUNT +
-      " Interview question with answers in JSON Format, Give Question and Answers as field in JSON";
+      " interview questions with answers in JSON format. Give 'Question' and 'Answer' as fields in JSON.";
 
     try {
       console.log("chatSession object:", chatSession); // Debugging log
@@ -64,7 +66,20 @@ function AddNewInterview() {
       const result = await chatSession.sendMessage(InputPrompt);
       console.log("Raw AI Response:", result); // Log raw response for debugging
 
-      const responseText = await result.response.text();
+      // Extract text from Gemini response
+      let responseText = "";
+      try {
+        responseText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      } catch (e) {
+        setError("AI response format error. Please try again.");
+        setLoading(false);
+        return;
+      }
+      if (!responseText) {
+        setError("AI did not return any text. Please try again.");
+        setLoading(false);
+        return;
+      }
       console.log("Response Text:", responseText); // Log response text
 
       const MockJsonResp = responseText
@@ -72,17 +87,37 @@ function AddNewInterview() {
         .replace("```", "")
         .trim();
 
-      console.log("Formatted JSON Response:", MockJsonResp); // Log formatted response
-
-      const parsedResponse = JSON.parse(MockJsonResp);
-      console.log("Parsed AI Questions and Answers:", parsedResponse); // Display parsed AI response
+      let parsedResponse;
+      try {
+        parsedResponse = JSON.parse(MockJsonResp);
+        // Defensive: ensure parsedResponse is an array or object
+        if (
+          typeof parsedResponse !== "object" ||
+          parsedResponse === null ||
+          (Array.isArray(parsedResponse) && parsedResponse.length === 0)
+        ) {
+          throw new Error("AI response JSON is empty or invalid.");
+        }
+        // If it's not an array, but an object, wrap in array for consistency
+        if (!Array.isArray(parsedResponse)) {
+          parsedResponse = [parsedResponse];
+        }
+      } catch (err) {
+        setError(
+          "AI response was not valid JSON or was empty. Please try again."
+        );
+        setLoading(false);
+        return;
+      }
       setJsonResponse(parsedResponse);
 
+      let insertedData = null;
       if (result) {
+        const newMockId = uuidv4();
         const resp = await db
           .insert(MockInterview)
           .values({
-            mockId: uuidv4(),
+            mockId: newMockId,
             jsonMockResp: MockJsonResp,
             jobPosition: jobPosition,
             jobDesc: jobDesc,
@@ -90,17 +125,33 @@ function AddNewInterview() {
             createdBy: user?.primaryEmailAddress?.emailAddress,
             createdAt: moment().format("DD-MM-yyyy"),
           })
-          .returning({ mockId: MockInterview.mockId });
+          .returning({ mockId: MockInterview.mockId }); // <-- fix: use correct property name
 
         console.log("Insert ID:", resp);
-        if (resp) {
+        if (
+          Array.isArray(resp) &&
+          resp.length > 0 &&
+          resp[0] &&
+          typeof resp[0] === "object" &&
+          "mockId" in resp[0] &&
+          resp[0].mockId
+        ) {
+          insertedData = {
+            insertedId: resp[0].mockId,
+            questionsAndAnswers: parsedResponse,
+          };
+          console.log("Inserted Data:", insertedData);
+
           setOpenDialog(false);
-          router.push("/dashboard/interview/" + resp[0]?.mockId);
+          router.push("/dashboard/interview/" + resp[0].mockId);
+        } else {
+          setError("Failed to save interview. Please try again.");
         }
       } else {
-        console.error("No result returned from chatSession.sendMessage");
+        setError("No result returned from AI. Please try again.");
       }
     } catch (error) {
+      setError("Error during submission: " + error.message);
       console.error("Error during submission:", error);
     } finally {
       setLoading(false);
@@ -164,6 +215,7 @@ function AddNewInterview() {
                     />
                   </div>
                 </div>
+                {error && <div className="mb-2 text-red-500">{error}</div>}
                 <div className="flex justify-end gap-5 ">
                   <Button
                     type="button"
@@ -180,7 +232,7 @@ function AddNewInterview() {
                     {loading ? (
                       <>
                         <LoaderCircle className=" animate-spin" />
-                        'Generation from AI'
+                        <span className="ml-2">Generating from AI...</span>
                       </>
                     ) : (
                       "Start Interview"

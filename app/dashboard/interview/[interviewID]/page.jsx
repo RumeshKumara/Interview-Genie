@@ -1,6 +1,6 @@
 "use client";
-import { db } from "@/util/db";
-import { MockInterview } from "@/util/schema";
+import { db } from "../../../../util/db";
+import { MockInterview } from "../../../../util/schema";
 import { eq } from "drizzle-orm";
 import React, { useEffect, useState } from "react";
 
@@ -15,7 +15,7 @@ function Interview(params) {
     const result = await db
       .select()
       .from(MockInterview)
-      .where(eq(MockInterview.mockID, params.interviewID));
+      .where(eq(MockInterview.mockId, params.interviewID)); // use mockId, not mockID
 
     console.log(result);
     setInterviewData(result[0]);
