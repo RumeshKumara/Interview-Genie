@@ -1,30 +1,47 @@
 "use client";
-import { Lightbulb, WebcamIcon } from "lucide-react";
+import {
+  BadgeInfo,
+  BookUser,
+  ChartNoAxesGantt,
+  Info,
+  Lightbulb,
+  WebcamIcon,
+} from "lucide-react";
 import ReactWebcam from "react-webcam";
 import { db } from "../../../../util/db";
 import { MockInterview } from "../../../../util/schema";
 import { eq } from "drizzle-orm";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { Button } from "../../../../components/ui/button";
+import Link from "next/link";
 
-function Interview(params) {
+function Interview({ params }) {
+  const unwrappedParams = use(params);
   const [interviewData, setInterviewData] = useState();
   const [webCamEnabled, setWebCamEnabled] = useState(false);
   const [permissionError, setPermissionError] = useState(false);
 
   useEffect(() => {
-    console.log(params.interviewID);
-    GetInterviewDetails();
-  }, []);
+    if (unwrappedParams?.interviewID) {
+      console.log("Interview ID:", unwrappedParams.interviewID);
+      GetInterviewDetails();
+    }
+  }, [unwrappedParams?.interviewID]);
 
   const GetInterviewDetails = async () => {
-    const result = await db
-      .select()
-      .from(MockInterview)
-      .where(eq(MockInterview.mockId, params.interviewID)); // use mockId, not mockID
+    try {
+      const result = await db
+        .select()
+        .from(MockInterview)
+        .where(eq(MockInterview.mockId, unwrappedParams.interviewID));
 
-    console.log(result);
-    setInterviewData(result[0]);
+      console.log("Fetched data:", result);
+      if (result && result.length > 0) {
+        setInterviewData(result[0]);
+      }
+    } catch (error) {
+      console.error("Error fetching interview:", error);
+    }
   };
 
   const handleEnableWebcam = async () => {
@@ -45,15 +62,16 @@ function Interview(params) {
   return (
     <div className="">
       <div className="flex flex-col items-center justify-center my-10">
-        <h2 className="text-3xl font-bold text-[#5100ff] ">
+        <h2 className="text-3xl font-bold text-[#5100ff] mb-10 ">
           Let's Get Started
         </h2>
         <div className="grid grid-cols-1 gap-20 md:grid-cols-2">
           <div className="flex flex-col gap-5">
-            <h3 className="text-xl font-semibold text-[#5100ff] ">
-              Interview Details
-            </h3>
-            <div className="p-4 rounded-2xl bg-sky-100 dark:bg-gray-800">
+            <div className="p-4 rounded-2xl bg-sky-100 dark:bg-[#19133a] border border-sky-500">
+              <h2 className="flex gap-2 pb-2 text-sky-500 dark:text-sky-400">
+                <ChartNoAxesGantt />
+                <strong>Details</strong>
+              </h2>
               {interviewData ? (
                 <div className="flex flex-col gap-3 dark:text-gray-200">
                   <p>
@@ -76,7 +94,8 @@ function Interview(params) {
             </div>
             <div className="p-4 bg-yellow-100 border border-yellow-500 rounded-4xl dark:bg-[#3d3513] dark:border-yellow-700">
               <h2 className="flex gap-2 pb-2 text-yellow-500 dark:text-yellow-400">
-                <Lightbulb />
+                <BadgeInfo />
+
                 <strong>Information</strong>
               </h2>
               <p className="text-sm text-yellow-700 dark:text-yellow-300">
@@ -110,10 +129,14 @@ function Interview(params) {
               />
             ) : (
               <>
-                <WebcamIcon className="w-full p-20 my-4 mt-4 text-[#5100ff] bg-[#bfbfff]  dark:bg-gray-800 h-72 rounded-4xl" />
+                <WebcamIcon
+                  className="w-full p-20 mb-4 text-sky-500 bg-[#bfbfff] dark:bg-[#19133a] h-72 rounded-4xl 
+                    transform transition-all duration-300 ease-in-out 
+                    dark:hover:shadow-purple-500/20"
+                />
                 <Button
                   onClick={handleEnableWebcam}
-                  className="w-full py-6 text-[#5100ff] bg-[#f7f7f7] dark:bg-gray-800  rounded-3xl hover:bg-[#5100ff] hover:text-white  border border-[#5100ff]  transition-colors duration-300"
+                  className="w-full py-6 text-[#5100ff] bg-[#f7f7f7] dark:bg-[#19133a]  rounded-3xl hover:bg-[#5100ff] hover:text-white  border border-sky-500 transition-colors duration-300"
                   disabled={webCamEnabled}
                 >
                   Enable Webcam and Microphone
@@ -130,18 +153,22 @@ function Interview(params) {
         </div>
       </div>
       <div className="flex items-end justify-end mt-10">
-        <Button
-          onClick={() => {
-            if (webCamEnabled) {
-              alert("Mock interview started! Ask your questions.");
-            } else {
-              alert("Please enable webcam and microphone first.");
-            }
-          }}
-          className="py-5 text-white bg-[#5100ff] rounded-full py5 "
+        <Link
+          href={`/dashboard/interview/${unwrappedParams.interviewID}/start`}
         >
-          Start Interview
-        </Button>
+          <Button
+            onClick={() => {
+              if (webCamEnabled) {
+                alert("Mock interview started! Ask your questions.");
+              } else {
+                alert("Please enable webcam and microphone first.");
+              }
+            }}
+            className="py-5 text-white bg-[#5100ff] rounded-full py5 "
+          >
+            Start Interview
+          </Button>
+        </Link>
       </div>
     </div>
   );
